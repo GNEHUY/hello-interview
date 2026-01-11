@@ -17,3 +17,13 @@
 16. 最近读过哪些LLM比较前沿的论文，聊一下它的相关方法，针对什么问题，提出了什么方法，对比实验有哪些？
 
 --参考自[hello-agents](https://github.com/datawhalechina/hello-agents/blob/main/Extra-Chapter/Extra01-%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98%E6%80%BB%E7%BB%93.md)
+
+## 参考回答
+1. 
+    <strong>Transformer 模型中的自注意力机制是如何工作的？</strong>
+
+    <strong>为什么比RNN更适合处理长序列？</strong>
+    1. <strong>并行计算能力RNN较差：</strong>
+    2. <strong>解决RNN中的长程依赖：</strong>
+
+---
