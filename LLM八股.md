@@ -15,3 +15,5 @@
 14. 在训练一个百或千亿参数级别的 LLM 时，你会面临哪些主要的工程和算法挑战？（例如：显存、通信、训练不稳定性等）
 15. 开源框架了解过哪些？Qwen，Deepseek的论文是否有研读过，说一下其中的创新点主要体现在哪？
 16. 最近读过哪些LLM比较前沿的论文，聊一下它的相关方法，针对什么问题，提出了什么方法，对比实验有哪些？
+
+--参考自[hello-agents](https://github.com/datawhalechina/hello-agents/blob/main/Extra-Chapter/Extra01-%E9%9D%A2%E8%AF%95%E9%97%AE%E9%A2%98%E6%80%BB%E7%BB%93.md)
