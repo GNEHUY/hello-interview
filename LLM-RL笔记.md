@@ -28,12 +28,12 @@ $$
 **核心项说明：**
 * **$\mathcal{J}_{PPO}(\theta)$**: PPO 的目标函数，通过最大化它来更新参数 $\theta$。
 * **$\rho_t(\theta)$**: 重要性采样比率（Importance Sampling Ratio），即 $\frac{\pi_{\theta}(o_t|q,o_{<t})}{\pi_{\theta_{old}}(o_t|q,o_{<t})}$，衡量新旧策略的差异。
-* **$\hat{A}_t$**: 优势函数（Advantage Function）的估计值，衡量当前动作比平均表现好多少：$\hat{A}_t = Q(s_t, o_t) - V(s_t)$。
+* **$\hat{A}_t$**: 优势函数（Advantage Function）的估计值，衡量当前动作比平均表现好多少
 * **$\text{clip}(\dots)$**: 裁剪函数，将比率限制在 $[1-\epsilon, 1+\epsilon]$ 之间，保证训练稳定性。
 
 ---
 
-## 3. 优势函数的计算：TD Error 与 GAE
+### 2.1 优势函数的计算：TD Error 与 GAE
 
 
 
@@ -63,7 +63,7 @@ $$
 
 ---
 
-## 4. 深度思考：关键参数理解
+### 2.2 深度思考：关键参数理解
 
 ### Q1: 为什么要用 GAE？
 如果只用 $\delta_t$（即 $\lambda = 0$），优势计算完全依赖于下一时刻的 $V$ 值估计。在训练初期 Critic 极其不准时，会导致巨大的 **Bias**。GAE 通过引入 $\lambda$ 融合了多步的真实奖励，减少了对 Critic 单步预测的过度依赖。
