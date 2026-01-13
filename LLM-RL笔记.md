@@ -27,7 +27,7 @@ $$
 
 **核心项说明：**
 * **$\mathcal{J}_{PPO}(\theta)$**: PPO 的目标函数，通过最大化它来更新参数 $\theta$。
-* **$\rho_t(\theta)$**: 重要性采样比率（Importance Sampling Ratio），即 $\frac{\pi_{\theta}(o_t|q,o_{<t})}{\pi_{\theta_{old}}(o_t|q,o_{<t})}$，衡量新旧策略的差异。
+* **$\rho_t(\theta)$**: 重要性采样比率（Importance Sampling Ratio），即 $\frac{\pi_{\theta}(o_t|q,o_{<t})}{\pi_{{old}}(o_t|q,o_{<t})}$，衡量新旧策略的差异。
 * **$\hat{A}_t$**: 优势函数（Advantage Function）的估计值，衡量当前动作比平均表现好多少
 * **$\text{clip}(\dots)$**: 裁剪函数，将比率限制在 $[1-\epsilon, 1+\epsilon]$ 之间，保证训练稳定性。
 
@@ -76,5 +76,13 @@ $\lambda \in [0, 1]$ 用于调节对 Critic 和 真实回报的信任程度：
 
 ---
 
+### 2.3 四个追问[[1]](@ref)
+
+### Q1: 为什么要用重要性采样 **$\rho_t(\theta)$**
+- 可以从数学本质、工程困境的角度来思考
+
+### Q2: “未来”和“未来得分的预期”怎么理解？
+
+
 ## 参考文章
-1. [LLM的Online RL：从PPO到Scaling GRPO](https://zhuanlan.zhihu.com/p/1980367577969616247)
+[[1]](@ref): [LLM的Online RL：从PPO到Scaling GRPO](https://zhuanlan.zhihu.com/p/1980367577969616247)
