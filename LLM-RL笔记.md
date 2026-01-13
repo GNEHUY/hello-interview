@@ -174,7 +174,7 @@ $$
 **改进二：Clip-Higher (提升截断上限)**
 
 - 问题：传统 PPO/GRPO 使用对称截断 $\epsilon=0.2$。对于低概率的“探索性”Token，其概率提升空间被锁死。
-- 改进：解耦截断范围，调高上限$\epsilon_{high}\gt\epsilon_{low}$, 例如 $\epsilon_{high}=0.28, \epsilon_{low}=0.2$ 。这允许那些虽然初始概率低、但被证明有效的 Token 获得更大的更新幅度，强行撑开探索空间，防止熵坍塌。
+- 改进：解耦截断范围，调高上限 $\epsilon_{high} \gt \epsilon_{low}$ , 例如 $\epsilon_{high}=0.28, \epsilon_{low}=0.2$ 。这允许那些虽然初始概率低、但被证明有效的 Token 获得更大的更新幅度，强行撑开探索空间，防止熵坍塌。
 
 **改进三：Dynamic Sampling (动态采样)**
 
@@ -198,7 +198,9 @@ $$
 ### 5.1 GRPO 的理论缺陷：Token 级采样的误用
 GRPO 的梯度估计依赖于 Token 级的重要性比率：
 
-$$\rho_{i,t}(\theta) = \frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{old}}(o_{i,t} | q, o_{i,<t})}$$
+$$
+\rho_{i,t}(\theta) = \frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{old}}(o_{i,t} | q, o_{i,<t})}
+$$
 
 Qwen 团队指出，重要性采样的基本原理是通过**对分布进行多次采样并加权平均**来修正分布偏差。然而，在 GRPO 中，对于每一个具体的 $o_{i,<t}$ 历史，我们只采样了一个 next-token $o_{i,t}$ 。
 
@@ -207,7 +209,9 @@ Qwen 团队指出，重要性采样的基本原理是通过**对分布进行多�
 ### 5.2 GSPO 核心算法：序列级重要性采样
 既然 Reward 是针对整个序列 (Sequence) 给予的，那么优化目标和重要性比率也应当回归到序列级别。GSPO 提出了基于序列似然的 Importance Ratio：
 
-$$s_{i}(\theta) = \left(\frac{\pi_{\theta}(o_{i} | q)}{\pi_{\theta_{old}}(o_{i} | q)}\right)^{\frac{1}{|o_{i}|}} = \exp\left(\frac{1}{|o_{i}|}\sum_{t=1}^{|o_{i}|}\log\frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{old}}(o_{i,t} | q, o_{i,<t})}\right)$$
+$$
+s_{i}(\theta) = \left(\frac{\pi_{\theta}(o_{i} | q)}{\pi_{\theta_{old}}(o_{i} | q)}\right)^{\frac{1}{|o_{i}|}} = \exp\left(\frac{1}{|o_{i}|}\sum_{t=1}^{|o_{i}|}\log\frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{old}}(o_{i,t} | q, o_{i,<t})}\right)
+$$
 
 注意这里引入了 $\frac{1}{|o_i|}$ 进行长度归一化，以防止长序列的概率数值过小导致下溢或方差失控。
 
@@ -289,8 +293,8 @@ $$
 这是 V3.2 报告中最晦涩但也最精彩的一个点，解决的是 **Top-p 采样与 RL 训练的数学冲突**。
 
 **冲突点 (Action Space Mismatch)：**
-* **推理时 (Rollout)**：开启 Top-p 后，词表尾部的低概率词被 Mask 掉了（概率归零）。$\pi_{old}$ 是在截断后的子空间里归一化的。
-* **训练时 (Train)**：$\pi_{\theta}$ 通常是在全词表空间计算 Softmax 的。
+* **推理时 (Rollout)**：开启 Top-p 后，词表尾部的低概率词被 Mask 掉了（概率归零）。 $\pi_{old}$ 是在截断后的子空间里归一化的。
+* **训练时 (Train)**： $\pi_{\theta}$ 通常是在全词表空间计算 Softmax 的。
 
 这导致重要性采样比率 $\rho$ 的分母和分子基准不同，梯度估计是歪的。
 
@@ -314,7 +318,7 @@ DeepSeek 的解法 (Keep Routing)： 简单而暴力。直接记录推理（Roll
 
 * **PPO $\rightarrow$ GRPO：做减法**
     * **核心变化**：去掉笨重的 Critic 网络，利用群组统计（Group Statistics）解决计算瓶颈。
-    * **关键发现**：RL 现阶段主要提升了模型的鲁棒性（$Maj@K$），将正确答案从候选池中“捞”到首位，而非本质增强基础能力。
+    * **关键发现**：RL 现阶段主要提升了模型的鲁棒性（ $Maj@K$ ），将正确答案从候选池中“捞”到首位，而非本质增强基础能力。
 
 * **GRPO $\rightarrow$ DAPO：做反思**
     * **核心变化**：质疑样本级损失（Sample-level Loss）的合理性。
