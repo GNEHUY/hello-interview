@@ -76,13 +76,68 @@ $\lambda \in [0, 1]$ 用于调节对 Critic 和 真实回报的信任程度：
 
 ---
 
-### 2.3 四个追问[[1]](https://zhuanlan.zhihu.com/p/1980367577969616247)
+### 2.3 四个追问
 
 ### Q1: 为什么要用重要性采样 **$\rho_t(\theta)$**
 - 可以从数学本质、工程困境的角度来思考
 
 ### Q2: “未来”和“未来得分的预期”怎么理解？
+- PPO 的训练过程，就是不断用“真实发生的未来”去打脸 Critic 的“预期”，迫使 Critic 修正预测，同时迫使 Actor 选择那些让 Critic “惊喜”（结果优于预期）的动作。
 
+### Q3: 为什么一定要建模 $V$ ？为什么不能只用 Reward Model 对每个 token 打分直接作为优势？
+- Critic 是去噪的关键。它过滤掉了环境本身的难易度波动，让模型专注于学习策略本身的优劣。
+
+### Q4: 为什么公式里要有 `clip` 和 `min`？
+- 直观理解： PPO (Proximal Policy Optimization) 的精髓在于**近端约束**。我们允许策略更新，但必须把新旧策略的差异限制在“安全范围”内，防止策略震荡。
+
+详细解答参考[[1]](https://zhuanlan.zhihu.com/p/1980367577969616247)
+
+---
+
+## 3. GRPO —— 抛弃Critic
+Critic 虽然好，但它通常与 Policy 网络一样大。在 70B 参数 BF16 格式的模型上，为了一个标量预测值，要多维护 140GB 的显存，这在 Scaling 阶段是不可接受的。
+
+DeepSeek 提出的 GRPO (Group Relative Policy Optimization)，其核心贡献在于证明了：对于推理任务，Baseline 不需要网络预测，用统计学估计就够了。
+
+### 3.1 第一阶段：DeepSeek-Math 时代的 GRPO
+GRPO 不再训练 **Value Network (Critic)**，而是通过 **组内采样** 来构建 Baseline，极大地节省了显存开销。
+
+**算法形式化：**
+对于同一个 Prompt $q$，从旧策略 $\pi_{old}$ 中采样 $G$ 个输出 $\{o_1, o_2, \dots, o_G\}$。其目标函数如下：
+
+$$
+\mathcal{J}_{GRPO}(\theta) = \mathbb{E}_{q\sim P(Q), \{o_i\}^{G}_{i=1}\sim \pi_{old}} \left[\frac{1}{G} \sum_{i=1}^{G} \left( \frac{1}{|o_i|}\sum_{t=1}^{|o_i|} \min \left( \rho_{i,t}(\theta) \hat{A}_{i,t}, \text{clip}(\rho_{i,t}(\theta), 1 - \epsilon, 1 + \epsilon) \hat{A}_{i,t} \right) - \beta D_{KL}(\pi_\theta \| \pi_{ref}) \right)\right]
+$$
+
+
+
+### 3.2 三个核心技术细节
+
+1. **重要性采样比率 ($\rho_{i,t}$)**
+   与 PPO 类似，针对组内每个样本 $o_i$ 的每个 token $t$ 计算新旧策略概率比：
+   $$\rho_{i,t}(\theta) = \frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{old}}(o_{i,t} | q, o_{i,<t})}$$
+
+2. **优势函数 ($\hat{A}_{i,t}$)：组内相对奖励**
+   使用组内 $G$ 个样本奖励的均值和标准差作为 Baseline。对于同一个样本 $o_i$ 中的所有 token，其优势值是共享的：
+   $$\hat{A}_{i,t} = \frac{r_i - \text{mean}(r_1, r_2, \dots, r_G)}{\text{std}(r_1, r_2, \dots, r_G)+\epsilon}$$
+   *注：这种方式让模型通过“自我博弈”来学习，表现优于组内平均水平的样本获得正向激励。*
+
+3. **KL 散度：无偏估计器**
+   DeepSeek-Math 采用了一种基于重要性采样的无偏估计器（K3 估计的修正版），防止策略偏移过大：
+   $$D_{KL}(\pi_\theta \| \pi_{ref}) = \frac{\pi_{ref}(o_{i,t} | q, o_{i,<t})}{\pi_\theta(o_{i,t} | q, o_{i,<t})} - \log \frac{\pi_{ref}(o_{i,t} | q, o_{i,<t})}{\pi_\theta(o_{i,t} | q, o_{i,<t})} - 1$$
+   *注：这个 KL 项是作为正则项直接减在 Loss 里的，而不是像 PPO 那样扣在 Reward 里。*
+
+---
+
+### 3.3 关键结论：The Nature of RL
+DeepSeek-Math 论文通过实验揭示了一个极其重要的现象：
+
+> **RL 显著提升了 Maj@K (多路投票准确率)，但并未显著提升 Pass@K (单次通过率)。**
+
+**深度理解：**
+这时候的 DeepSeek 认为，强化学习的主要作用是让模型的输出分布更加 **Robust (鲁棒)**。它更像是一个“重排器”，将正确答案从 Top-K 的候选池中“捞”到了 Top-1 (即更大概率被采样到)，而**并没有本质上增强模型原本不具备的基础能力**。这也为后来 DeepSeek-R1 转向大规模推理强化学习埋下了伏笔。
+
+---
 
 ## 参考文章
 [[1]: LLM的Online RL：从PPO到Scaling GRPO](https://zhuanlan.zhihu.com/p/1980367577969616247)
