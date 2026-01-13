@@ -76,7 +76,7 @@ $\lambda \in [0, 1]$ 用于调节对 Critic 和 真实回报的信任程度：
 
 ---
 
-### 2.3 四个追问[[1]](@ref)
+### 2.3 四个追问[[1]]((https://zhuanlan.zhihu.com/p/1980367577969616247))
 
 ### Q1: 为什么要用重要性采样 **$\rho_t(\theta)$**
 - 可以从数学本质、工程困境的角度来思考
@@ -85,4 +85,4 @@ $\lambda \in [0, 1]$ 用于调节对 Critic 和 真实回报的信任程度：
 
 
 ## 参考文章
-[[1]](@ref): [LLM的Online RL：从PPO到Scaling GRPO](https://zhuanlan.zhihu.com/p/1980367577969616247)
+[[1]: LLM的Online RL：从PPO到Scaling GRPO](https://zhuanlan.zhihu.com/p/1980367577969616247)
