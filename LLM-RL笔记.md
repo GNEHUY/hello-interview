@@ -272,6 +272,7 @@ $$
 $$
 
 其中，重要性采样比率为：
+
 $$
 \rho_{i,t} = \frac{\pi_{\theta}(o_{i,t} | \dots)}{\pi_{old}(o_{i,t} | \dots)}
 $$
