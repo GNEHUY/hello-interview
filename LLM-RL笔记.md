@@ -204,7 +204,7 @@ Qwen 团队指出，重要性采样的基本原理是通过**对分布进行多�
 这意味着重要性比率是基于单次采样计算的，它无法起到“分布修正”的作用，反而引入了极大的方差。这种高方差噪声会随着序列长度的增加而累积，并在 `clip` 截断机制下被进一步放大，最终导致训练崩溃。
 
 ### 5.2 GSPO 核心算法：序列级重要性采样
-既然 Reward 是针对整个序列 (Sequence) 给予的，那么优化目标和重要性比率也应当回归到序列级别。GSPO 提出了基于序列似然的 Importance Ratio：$$s_{i}(\theta) = \left( \frac{\pi_{\theta}(o_{i} | q)}{\pi_{\theta_{old}}(o_{i} | q)} \right)^{\frac{1}{|o_{i}|}} = \exp \left( \frac{1}{|o_{i}|} \sum_{t=1}^{|o_{i}|} \log \frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{old}}(o_{i,t} | q, o_{i,<t})} \right) $$
+既然 Reward 是针对整个序列 (Sequence) 给予的，那么优化目标和重要性比率也应当回归到序列级别。GSPO 提出了基于序列似然的 Importance Ratio：$$s_{i}(\theta) = \left( \frac{\pi_{\theta}(o_{i} | q)}{\pi_{\theta_{old}}(o_{i} | q)} \right)^{\frac{1}{|o_{i}|}} = \exp \left( \frac{1}{|o_{i}|} \sum_{t=1}^{|o_{i}|} \log \frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{old}}(o_{i,t} | q, o_{i,<t})} \right)$$
 
 注意这里引入了 $\frac{1}{|o_i|}$ 进行长度归一化，以防止长序列的概率数值过小导致下溢或方差失控。
 
