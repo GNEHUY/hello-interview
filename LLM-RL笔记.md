@@ -197,10 +197,7 @@ $$
 
 ### 5.1 GRPO 的理论缺陷：Token 级采样的误用
 GRPO 的梯度估计依赖于 Token 级的重要性比率：
-
-$$
-\rho_{i,t}(\theta) = \frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{old}}(o_{i,t} | q, o_{i,<t})}
-$$
+$$\rho_{i,t}(\theta) = \frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{old}}(o_{i,t} | q, o_{i,<t})}$$
 
 Qwen 团队指出，重要性采样的基本原理是通过**对分布进行多次采样并加权平均**来修正分布偏差。然而，在 GRPO 中，对于每一个具体的 $o_{i,<t}$ 历史，我们只采样了一个 next-token $o_{i,t}$ 。
 
