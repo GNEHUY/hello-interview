@@ -21,6 +21,32 @@
 ## 参考回答
 1. 
     <strong>Transformer 模型中的自注意力机制是如何工作的？</strong>
+    
+    简单来说：自注意力机制使得模型能够动态地衡量输入序列中不同单词之间的重要性，并据此生成每个单词的上下文感知表示。
+    1. Q, K, V向量生成：对于输入序列中的每个token的嵌入向量，通过乘以三个可学习的权重矩阵，分别生成三个向量，查询Q，键K，值V
+        * <strong>Query (Q):</strong> 代表当前词元为了更好地理解自己，需要去“查询”序列中其他词元的信息。
+        * <strong>Key (K):</strong> 代表序列中每个词元所“携带”的，可以被查询的信息标签。
+        * <strong>Value (V):</strong> 代表序列中每个词元实际包含的深层含义。
+
+    2. 计算注意力分数（查找的过程）：为了确定当前token（由Q代表）应该对其他所有token（由K代表）投入多少关注，我们要计算当前token的Q和其他所有token的K的点积。
+    <div align="center">
+    $$\text{Score}(Q_i, K_j) = Q_i \cdot K_j$$
+    </div>
+
+    3. 缩放：将计算出的分数除以一个缩放因子 $\sqrt{d_k}$（ $d_k$ 是K向量的维度）。这一步是为了在反向传播时获得更稳定的梯度，防止点积结果过大导致Softmax函数进入饱和区。
+    <div align="center">
+    $$\frac{Q \cdot K^T}{\sqrt{d_k}}$$
+    </div>
+
+    4. Softmax归一化：通过一个Softmax函数，使其转换为一组总和为1的概率分布。这些概率就是“注意力权重”，表示在当前位置，每个输入词元所占的重要性。
+    <div align="center">
+    $$\text{AttentionWeights} = \text{softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right)$$
+    </div>
+
+    4. 加权求和：将得到的注意力权重与每个词元对应的V向量相乘并求和，得到最终的自注意力层输出。这个输出向量融合了整个序列的上下文信息，且权重由模型动态学习得到。
+    <div align="center">
+    $$\text{Output} = \text{AttentionWeights} \cdot V$$
+    </div>
 
     <strong>为什么比RNN更适合处理长序列？</strong>
     1. <strong>并行计算能力RNN较差：</strong>自注意力机制相比RNN可以一次性处理整个序列，计算所有位置之间的关联，是高度并行的。但是RNN是按时间顺序处理每个词，无法并行处理，在处理长序列时很慢
